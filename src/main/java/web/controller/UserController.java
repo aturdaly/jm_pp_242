@@ -13,7 +13,6 @@ import web.model.User;
 import web.service.RoleService;
 import web.service.UserService;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Controller
@@ -50,38 +49,14 @@ public class UserController {
 
 	@PostMapping("/admin/updateUser")
 	public ModelAndView updateUser(ModelMap model, User user) {
-		Set<Role> userRoles = new HashSet<>();
-		List<Role> roleList = roleService.getAllRole();
-
-		for (Role role: roleList) {
-			for (Role role2: user.getRoles()) {
-				if (role2.getRole().equals(role.getRole())) {
-					userRoles.add(role);
-				}
-			}
-		}
-
-		user.setRoles(userRoles);
-		userService.updateUser(user);
+		userService.updateUser(findUserRole(user));
 		model.addAttribute("attribute", "redirectWithRedirectPrefix");
 		return new ModelAndView("redirect:/admin", model);
 	}
 
 	@PostMapping("/admin/addUser")
 	public ModelAndView addUser(ModelMap model, User user) {
-		Set<Role> userRoles = new HashSet<>();
-		List<Role> roleList = roleService.getAllRole();
-
-		for (Role role: roleList) {
-			for (Role role2: user.getRoles()) {
-				if (role2.getRole().equals(role.getRole())) {
-					userRoles.add(role);
-				}
-			}
-		}
-
-		user.setRoles(userRoles);
-		userService.addUser(user);
+		userService.addUser(findUserRole(user));
 		model.addAttribute("attribute", "redirectWithRedirectPrefix");
 		return new ModelAndView("redirect:/admin", model);
 	}
@@ -103,4 +78,12 @@ public class UserController {
 		return "logout";
 	}
 
+	private User findUserRole(User user) {
+		Set<Role> userRoles = new HashSet<>();
+		for (Role role: user.getRoles()) {
+			userRoles.add(roleService.getRoleByName(role.getRole()));
+		}
+		user.setRoles(userRoles);
+		return user;
+	}
 }
